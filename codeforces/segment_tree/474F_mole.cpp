@@ -53,67 +53,79 @@ using namespace std;
         cin >> x;               \
         s.insert(x);            \
     }
-int a[MAXN], t[4* MAXN];
-int combine(int l, int lmid, int rmid, int r, int lc, int rc)
-{
-    int ret = 0;
-    cout<<"range"<<l<<" "<<lmid<<" "<<rmid<<" "<<r<<" "<<lc<<" "<<rc<<endl;
-    for (int i = l; i <= lmid; i++)
-    {
-        int counta = 0, countb = 0;
-        for (int j = rmid; j <= r; j++)
-        {
-            if (a[j] >= a[i] && a[j] % a[i] == 0 )
-            {
-                counta++;
+// 5
+// 1 3 2 4 2
+// 1
+// 4 5
+
+
+int n;
+int a[MAXN];
+vector<int> t[4* MAXN];
+vector<int> combine(vi lc, vi rc, int l, int lmid, int rmid, int r)
+{   
+    vi ret(n);
+    for(int i = 0 ; i < n; i++){
+        ret[i] = lc[i] + rc[i];
+    }
+    // for(int i = 0 ; i < n ; i++)cout<<lc[i]<<" ";
+    // cout<<endl;
+    // for (int i = 0; i < n; i++)
+    //     cout << rc[i] << " ";
+    // cout<<endl;
+    // for(int i = 0 ; i < n; i++)cout<<ret[i]<<" ";
+    for(int i = l; i <= lmid; i++){
+        for(int j = rmid; j <= r; j++){
+            if(a[j] % a[i] == 0){
+                ret[i]++;
             }
-            if (a[i] >= a[j] && a[i] % a[j] == 0)
-            {
-                countb++;
+            if(a[i]% a[j] == 0){
+                ret[j]++;
             }
         }
-        cout<<"cmb cnt"<<counta+lc<<" "<<countb+rc<<endl;
-        if(counta+lc == r-l)ret++;
-        if(countb+rc == r-l) ret++;
     }
-    cout<<ret<<endl;
     return ret;
 }
 void build(int v, int l, int r)
 {
     if (l == r)
     {
-        t[v] = 0;
+        t[v] = vector<int>(n,0);
     }
     else
     {
         int mid = (l + r) / 2;
         build(v * 2, l, mid);
         build(v * 2 + 1, mid+1, r);
-        // cout<<"lr"<<l<<" "<<r<<endl;
-        cout<<v<<" "<<t[v*2] <<" "<<t[v*2+1]<<endl;
-        t[v] = t[v*2] + t[v*2+1] + combine(l, mid, mid+1, r, t[v*2], t[v*2+1]);
-        cout<<"t[v]"<<t[v]<<endl;
+        t[v] = combine(t[v * 2], t[v * 2 + 1], l, mid, mid + 1, r);
     }
 }
-int get(int v, int tl, int tr, int l , int r){
-    if (l > r)
-        return 0;
+vector<int> get(int v, int tl, int tr, int l, int r)
+{
+    if (l > r){
+        vi k(n,0);
+        return k;
+    }
     if (l == tl && r == tr)
     {
+        // cout<<"Lr"<<l<<" "<<r<<endl;
+        // for(int i = 0 ; i < n; i++){
+        //     cout<<t[v][i]<<" ";
+        // }
+        // cout<<endl;
         return t[v];
     }
     int tm = (tl + tr) / 2;
     int sum = 0;
-    int lc =  get(v * 2, tl, tm, l, min(r, tm));
-    int rc = get(v * 2 + 1, tm + 1, tr, max(l, tm + 1), r);
-    sum = lc + rc;
-    return sum + combine(l, min(r,tm), max(l,tm), r, lc, rc);
+    // cout<<tl<<" "<<tm<<" "<<tr<<" "<<l<<" "<<min(r,tm)<<endl;
+    vi lc = get(v * 2, tl, tm, l, min(r, tm));
+    vi rc = get(v * 2 + 1, tm + 1, tr, max(l, tm + 1), r);
+    return combine(lc, rc, l, tm, tm+1, r);
 }
 int32_t main()
 {
     IOS;
-    int n, q;
+    int q;
     cin >> n;
     for (int i = 0; i < n; i++)
     {
@@ -124,21 +136,27 @@ int32_t main()
     //     cout<<t[i]<<" ";
     //  }
     //  cout<<endl;
-     build(1,0,n-1);
+     build(1, 0,n-1);
+
     cin >> q;
      rep(i,0,q){
         int l, r;
         cin>>l>>r;
-        // int count = 0;
-        // l--;r--;
-        // int diff = r - l;
-        // for(int j = l; j <= r; j++){
-        //     cout<<t[j]<<" ";
-        //     if(t[j] == diff)count++;
-        // }
+        vi ans = get(1,0,n-1,l-1,r-1);
+        int cnt = 0;
+        for(int i = 0 ; i < n; i++){
+            if(ans[i] == r-l)cnt++;
+            // cout<<ans[i]<<" ";
+        }
+        // cout<<"cnt"<<cnt<<" "<<r-l + 1 - cnt<<endl;
+        cout<<r-l+1-cnt<<endl;
         // cout<<endl;
-
      }
 
     return 0;
 }
+
+// 4 0 2 0 2 
+// 0 2 4 0 2 
+// 0 0 4 0 2 
+// 0 0 0 0 1
