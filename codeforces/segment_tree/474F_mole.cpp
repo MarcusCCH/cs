@@ -58,69 +58,50 @@ using namespace std;
 // 1
 // 4 5
 
-
 int n;
 int a[MAXN];
-vector<int> t[4* MAXN];
-vector<int> combine(vi lc, vi rc, int l, int lmid, int rmid, int r)
-{   
-    vi ret(n);
-    for(int i = 0 ; i < n; i++){
-        ret[i] = lc[i] + rc[i];
-    }
-    // for(int i = 0 ; i < n ; i++)cout<<lc[i]<<" ";
-    // cout<<endl;
-    // for (int i = 0; i < n; i++)
-    //     cout << rc[i] << " ";
-    // cout<<endl;
-    // for(int i = 0 ; i < n; i++)cout<<ret[i]<<" ";
-    for(int i = l; i <= lmid; i++){
-        for(int j = rmid; j <= r; j++){
-            if(a[j] % a[i] == 0){
-                ret[i]++;
-            }
-            if(a[i]% a[j] == 0){
-                ret[j]++;
-            }
-        }
-    }
-    return ret;
+pii t[4*MAXN];
+int gcd(int a, int b){ // 5 10 
+    if(a == 0)return b;
+    if(a>b)gcd(b,a);
+    return gcd(b%a, a);
 }
 void build(int v, int l, int r)
 {
     if (l == r)
     {
-        t[v] = vector<int>(n,0);
+        t[v] = make_pair(a[l],a[l]);
     }
     else
     {
         int mid = (l + r) / 2;
         build(v * 2, l, mid);
         build(v * 2 + 1, mid+1, r);
-        t[v] = combine(t[v * 2], t[v * 2 + 1], l, mid, mid + 1, r);
+        int g = gcd(t[v*2].F, t[v*2+1].F);
+        int m = min(t[v*2].S, t[v*2+1].S);
+        // cout<<l<<" "<<r<<" "<<g<<" "<<m<<endl;
+        t[v] = make_pair(g,m);
     }
 }
-vector<int> get(int v, int tl, int tr, int l, int r)
+pii get(int v, int tl, int tr, int l, int r)
 {
     if (l > r){
-        vi k(n,0);
-        return k;
+        return make_pair(-1,-1);
     }
     if (l == tl && r == tr)
     {
-        // cout<<"Lr"<<l<<" "<<r<<endl;
-        // for(int i = 0 ; i < n; i++){
-        //     cout<<t[v][i]<<" ";
-        // }
-        // cout<<endl;
+        // cout<<l<<" "<<r<<" "<<t[v].F<<" "<<t[v].S<<endl;
         return t[v];
     }
     int tm = (tl + tr) / 2;
-    int sum = 0;
-    // cout<<tl<<" "<<tm<<" "<<tr<<" "<<l<<" "<<min(r,tm)<<endl;
-    vi lc = get(v * 2, tl, tm, l, min(r, tm));
-    vi rc = get(v * 2 + 1, tm + 1, tr, max(l, tm + 1), r);
-    return combine(lc, rc, l, tm, tm+1, r);
+    pii lc = get(v * 2, tl, tm, l, min(r, tm));
+    pii rc = get(v * 2 + 1, tm + 1, tr, max(l, tm + 1), r);
+    if(lc.F == -1){
+        lc = rc;
+    }else if(rc.F == -1){
+        rc = lc;
+    }
+    return make_pair(gcd(lc.F,rc.F), min(lc.S,rc.S));
 }
 int32_t main()
 {
@@ -131,32 +112,23 @@ int32_t main()
     {
         cin >> a[i];
     }
-
-    //  for(int i = 0 ; i < n ; i++){
-    //     cout<<t[i]<<" ";
-    //  }
-    //  cout<<endl;
-     build(1, 0,n-1);
-
+    build(1, 0,n-1);
     cin >> q;
      rep(i,0,q){
         int l, r;
         cin>>l>>r;
-        vi ans = get(1,0,n-1,l-1,r-1);
-        int cnt = 0;
-        for(int i = 0 ; i < n; i++){
-            if(ans[i] == r-l)cnt++;
-            // cout<<ans[i]<<" ";
+        pii ans = get(1, 0, n-1, l-1, r-1);
+        // cout<<ans.F<<" "<<ans.S<<endl;
+        if(ans.F == ans.S){
+            int cnt = 0;
+            for(int i = l-1; i<=r-1; i++){
+                if(a[i] == ans.F)cnt++;
+            }
+            cout<<r-l-cnt+1<<endl;
+        }else{
+            cout<<r-l+1<<endl;
         }
-        // cout<<"cnt"<<cnt<<" "<<r-l + 1 - cnt<<endl;
-        cout<<r-l+1-cnt<<endl;
-        // cout<<endl;
      }
 
     return 0;
 }
-
-// 4 0 2 0 2 
-// 0 2 4 0 2 
-// 0 0 4 0 2 
-// 0 0 0 0 1

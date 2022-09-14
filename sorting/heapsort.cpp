@@ -10,8 +10,8 @@
 #include <string.h>
 using namespace std;
 #define INF 1000000010
-#define MAXN 300010
-#define K 25ac
+#define MAXN 100010
+#define K 25
 #define pb push_back
 #define F first
 #define S second
@@ -34,46 +34,67 @@ using namespace std;
 #define seea(a,x,y) for(int i=x;i<y;i++){cin>>a[i];}
 #define seev(v,n) for(int i=0;i<n;i++){int x; cin>>x; v.push_back(x);}
 #define sees(s,n) for(int i=0;i<n;i++){int x; cin>>x; s.insert(x);}
-int parent[MAXN];
-struct Query{
-    int l, r, c;
-};
-void make_set(int a){
-    parent[a] = a;
-    
-}
-vector<Query> q;
-int ans[MAXN];
-bool painted[MAXN];
-int find_set(int a){
-    if(a == parent[a]){
-        return a;
+int h[MAXN];
+int heap_size,n;
+vector<int> ans;
+void max_heapify(int i)
+{
+    // cout<<i<<endl;
+    // if(i == heap_size)return;
+    int l = 2 * i;
+    int r = 2 * i + 1;
+    int largest = i;
+    if (h[l] > h[i])
+    {
+        largest = l;
     }
-    return parent[a]  = find_set(parent[a]);
+    if (h[r] > h[largest])
+    {
+        largest = r;
+    }
+
+    if (i != largest)
+    {
+        swap(h[i], h[largest]);
+        max_heapify(largest);
+    }
 }
+void buildmaxheap(){
+    for(int i = heap_size / 2; i >= 1; i--){
+        max_heapify(i);
+    }
+    // for(int i = 1; i <= n; i++)cout<<h[i]<<" ";
+}
+
+
+void heap_sort(){
+    buildmaxheap();
+    while(heap_size >= 1){
+        // cout<<h[1]<<" "<<h[heap_size]<<endl;
+        ans.pb(h[1]);
+        swap(h[1], h[heap_size]);
+        h[heap_size] = -1;
+        --heap_size;
+        max_heapify(1);
+    }   
+    for(int i = n-1; i>=0; i--)cout<<ans[i]<<" ";
+}
+
+/*
+        9
+    8       7
+6       5
+
+*/
+
 int32_t main(){ 
  IOS; 
- int n,m;
- cin>>n>>m;
- for(int i = 1; i <= n+1; i++)make_set(i);
- for(int i = 0 ; i < m; i++){
-    Query a;
-    cin>>a.l>>a.r>>a.c;
-    q.pb(a);
+ cin>>n;
+ heap_size = n;
+ for(int i = 1; i <= n; i++){
+    cin>>h[i];
  }
- for(auto itr = q.begin(); itr != q.end(); itr++){
-    Query a = *itr;
-    // cout<<a.l<<endl;
-    for(int i = find_set(a.l); i <= a.r; i = find_set(i)){
-        if(i != a.c){
-        ans[i] = a.c;
-        // painted[i] = true;
-        parent[i] = i+1;
-        }else{
-            i++;
-        }
-    }
- }
- for(int i = 1; i <= n ; i++)cout<<ans[i]<<" ";
+ heap_sort();
+
  return 0; 
 }
