@@ -36,47 +36,40 @@ using namespace std;
 #define seea(a,x,y) for(int i=x;i<y;i++){cin>>a[i];}
 #define seev(v,n) for(int i=0;i<n;i++){int x; cin>>x; v.push_back(x);}
 #define sees(s,n) for(int i=0;i<n;i++){int x; cin>>x; s.insert(x);}
-int parent[MAXN], ra[MAXN];
-bool visited[MAXN];
-vector<int> adj[MAXN];
-void make_set(int n){
-    parent[n] = n;
-    ra[n] = 1;
-}
-int find_set(int n){
-    if(n == parent[n]){
-        return n;
-    }
-    return parent[n] = find_set(parent[n]);
-}
-void union_sets(int u, int v){
-    u = find_set(u);
-    v = find_set(v);
-    if(u != v){
-        if(ra[u] < ra[v]){
-            swap(u,v);
+int n;
+vb visited(n,0);
+vii adj[MAXN];
+vi d(n,INF), p(n,-1);
+void dij(int s){
+    d[s] = 0;
+    for(int i = 0 ; i < n; i++){
+        int v= -1;
+        for(int j = 0 ; j <n; j++){
+            if(!visited[j] && (v==-1 || d[v] < d[j])){
+                v = j;
+            }
         }
-        parent[v] = u;
-    }
-}
-void dfs (int v){
-    visited[v] = true;
-    for(auto u : adj[v]){
-        if(!visited[u]){
-
-            dfs(u);
-            union_sets(u,v);
-            parent[find_set(v)] = v;
+        if(d[v] == INF)break;
+        visited[v] = true;
+        for(auto edge : adj[v]){
+            int to = edge.F;
+            int weight = edge.S;
+            if(d[to] > d[v] + weight){
+                d[to] = d[v] + weight;
+                p[to] = v;  
+            }
         }
     }
-    for(int other_node : queries[v]){
-        if(visited[other_node]){
-            cout<<parent[find_set(other_node)];
-        }
-    }
+    
 }
 int32_t main(){ 
  IOS; 
- solve();  
+ cin>>n;
+ for(int i = 0; i <n; i++){
+    int a,b,w;
+    cin>>a>>b>>w;
+    adj[a].pb(mp(b,w));
+    adj[b].pb(mp(a,w));
+ }
  return 0; 
 }
